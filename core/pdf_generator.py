@@ -19,6 +19,14 @@ class ResumePDF(FPDF):
     def footer(self):
         pass
 
+def clean_markdown(text: str) -> str:
+    """Remove markdown bold/italic symbols for PDF rendering."""
+    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)  # Bold
+    text = re.sub(r'__(.*?)__', r'\1', text)      # Bold
+    text = re.sub(r'\*(.*?)\*', r'\1', text)      # Italic
+    text = re.sub(r'_(.*?)_', r'\1', text)        # Italic
+    return text
+
 def generate_pdf(resume_text: str, candidate_name: str = "resume") -> str:
     """
     Convert plain-text resume to a professionally formatted PDF using fpdf2.
@@ -32,20 +40,22 @@ def generate_pdf(resume_text: str, candidate_name: str = "resume") -> str:
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
     
+    # Page width minus margins
+    effective_width = pdf.w - 2 * pdf.l_margin
+    
     # Use a standard serif font for ATS readability
     pdf.set_font("Times", size=10)
     
     lines = resume_text.strip().split('\n')
     
-    # Header logic (First few lines)
     header_processed = False
-    for i, line in enumerate(lines):
-        line = line.strip()
+    for line in lines:
+        line = clean_markdown(line.strip())
         if not line:
             pdf.ln(2)
             continue
             
-        # First non-empty line is usually the name
+        # First non-empty line is the name
         if not header_processed:
             pdf.set_font("Times", "B", 16)
             pdf.cell(0, 10, line, ln=True, align='C')
@@ -53,22 +63,24 @@ def generate_pdf(resume_text: str, candidate_name: str = "resume") -> str:
             header_processed = True
             continue
 
-        # Check for section headers (all caps or common keywords)
+        # Check for section headers (all caps or specific keywords)
         upper_line = line.upper()
-        section_keywords = ["SUMMARY", "EXPERIENCE", "SKILLS", "EDUCATION", "PROJECTS", "CERTIFICATIONS"]
-        is_header = any(kw in upper_line for kw in section_keywords) and len(line) < 40
+        section_keywords = ["SUMMARY", "EXPERIENCE", "SKILLS", "EDUCATION", "PROJECTS", "CERTIFICATIONS", "PROFESSIONAL EXPERIENCE"]
+        is_header = any(kw in upper_line for kw in section_keywords) and len(line) < 50
         
         if is_header:
             pdf.ln(4)
-            pdf.set_font("Times", "B", 12)
-            pdf.cell(0, 8, line, ln=True)
-            pdf.line(pdf.get_x(), pdf.get_y(), pdf.get_x() + 190, pdf.get_y())
+            pdf.set_font("Times", "B", 11)
+            pdf.cell(0, 7, line, ln=True)
+            pdf.line(pdf.l_margin, pdf.get_y(), pdf.w - pdf.r_margin, pdf.get_y())
             pdf.ln(2)
             pdf.set_font("Times", size=10)
         elif line.startswith(("-", "•", "*")):
-            # Bullet points
-            pdf.set_x(15)
-            pdf.multi_cell(0, 5, line)
+            # Bullet points with safe indentation
+            bullet_indent = 5
+            pdf.set_x(pdf.l_margin + bullet_indent)
+            # Use multi_cell with a calculated width to ensure it fits
+            pdf.multi_cell(effective_width - bullet_indent, 5, line)
         else:
             # Normal text
             pdf.multi_cell(0, 5, line)
