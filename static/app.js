@@ -299,11 +299,22 @@ async function generatePDFInBackground() {
     addLog('Generating PDF in background...', 'accent');
     const nameMatch = state.finalResume.match(/^([A-Z][a-z]+ [A-Z][a-z]+)/m);
     const name = nameMatch ? nameMatch[1] : 'resume';
+    
+    // Extract job title from the second line of the resume
+    const lines = state.finalResume.split('\n');
+    let jobTitle = '';
+    if (lines.length > 1) {
+      jobTitle = lines[1].trim();
+    }
+    // Fallback: try to extract from JD analysis if available
+    if (!jobTitle && state.analysisData?.jd_analysis?.job_title) {
+      jobTitle = state.analysisData.jd_analysis.job_title;
+    }
 
     const res = await fetch('/api/generate-pdf', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ resume: state.finalResume, name })
+      body: JSON.stringify({ resume: state.finalResume, name, job_title: jobTitle })
     });
     const data = await res.json();
     if (!data.error) {
@@ -487,10 +498,21 @@ async function downloadPDF() {
     try {
       const nameMatch = state.finalResume.match(/^([A-Z][a-z]+ [A-Z][a-z]+)/m);
       const name = nameMatch ? nameMatch[1] : 'resume';
+      
+      // Extract job title from the second line of the resume
+      const lines = state.finalResume.split('\n');
+      let jobTitle = '';
+      if (lines.length > 1) {
+        jobTitle = lines[1].trim();
+      }
+      if (!jobTitle && state.analysisData?.jd_analysis?.job_title) {
+        jobTitle = state.analysisData.jd_analysis.job_title;
+      }
+      
       const res = await fetch('/api/generate-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resume: state.finalResume, name })
+        body: JSON.stringify({ resume: state.finalResume, name, job_title: jobTitle })
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);

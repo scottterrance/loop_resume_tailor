@@ -339,7 +339,7 @@ class ResumePDF(FPDF):
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
-def generate_pdf(resume_text: str, candidate_name: str = "resume") -> str:
+def generate_pdf(resume_text: str, candidate_name: str = "resume", job_title: str = "") -> str:
     resume_text = preprocess_resume(resume_text)
     lines = resume_text.split('\n')
     
@@ -390,9 +390,31 @@ def generate_pdf(resume_text: str, candidate_name: str = "resume") -> str:
         pdf.body_text(line)
         i += 1
 
-    file_id = str(uuid.uuid4())[:8]
-    safe_name = re.sub(r'[^a-zA-Z0-9_-]', '_', candidate_name)[:30]
-    output_path = OUTPUT_DIR / f"{safe_name}_{file_id}.pdf"
+    # Generate filename: FirstName_LastName_Resume_JobTitle.pdf
+    # Extract first and last name from candidate_name
+    name_parts = candidate_name.strip().split()
+    if len(name_parts) >= 2:
+        first_name = name_parts[0]
+        last_name = name_parts[-1]
+    elif len(name_parts) == 1:
+        first_name = name_parts[0]
+        last_name = ""
+    else:
+        first_name = "Resume"
+        last_name = ""
+    
+    # Sanitize job title for filename
+    safe_job_title = re.sub(r'[^a-zA-Z0-9_-]', '_', job_title).strip('_')[:40] if job_title else "Resume"
+    safe_first = re.sub(r'[^a-zA-Z0-9_-]', '_', first_name)
+    safe_last = re.sub(r'[^a-zA-Z0-9_-]', '_', last_name)
+    
+    # Build filename
+    if safe_last:
+        filename = f"{safe_first}_{safe_last}_Resume_{safe_job_title}.pdf"
+    else:
+        filename = f"{safe_first}_Resume_{safe_job_title}.pdf"
+    
+    output_path = OUTPUT_DIR / filename
     
     pdf.output(str(output_path), 'F')
     return str(output_path)

@@ -166,6 +166,7 @@ def generate_pdf_endpoint():
 
     resume_text = data.get("resume", "").strip()
     candidate_name = data.get("name", "resume")
+    job_title = data.get("job_title", "")
 
     if not resume_text:
         return jsonify({"error": "Resume text is required"}), 400
@@ -173,15 +174,15 @@ def generate_pdf_endpoint():
     try:
         import logging
         logging.basicConfig(level=logging.INFO)
-        logging.info(f"Generating PDF for {candidate_name}")
+        logging.info(f"Generating PDF for {candidate_name} - {job_title}")
         
-        pdf_path = generate_pdf(resume_text, candidate_name)
+        pdf_path = generate_pdf(resume_text, candidate_name, job_title)
         
         if not os.path.exists(pdf_path):
             raise FileNotFoundError(f"PDF file was not created at {pdf_path}")
             
-        file_id = Path(pdf_path).stem.split("_")[-1]
-        return jsonify({"file_id": file_id, "filename": Path(pdf_path).name})
+        # Return just the filename since it now contains all info
+        return jsonify({"filename": Path(pdf_path).name})
     except Exception as e:
         import traceback
         error_msg = f"PDF Error: {str(e)}\n{traceback.format_exc()}"
