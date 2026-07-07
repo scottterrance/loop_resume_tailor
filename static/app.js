@@ -265,21 +265,18 @@ function handleComplete(event) {
   const elapsed = Math.round((Date.now() - state.startTime) / 1000);
   addLog(`Total time: ${elapsed}s across ${state.iterations.length} iteration(s)`, '');
 
-  // Auto-generate PDF
-  generateAndShowResults();
-}
-
-function handleError(event) {
-  addLog('ERROR: ' + event.message, 'error');
-  $('log-spinner').style.display = 'none';
+  // Show results immediately
+  renderResults();
+  showPanel('results-panel');
   $('start-btn').disabled = false;
-  showToast('An error occurred. Check the log for details.', 'error');
+
+  // Generate PDF in the background
+  generatePDFInBackground();
 }
 
-// ── Results ───────────────────────────────────────────────────────────────
-async function generateAndShowResults() {
-  // Generate PDF
+async function generatePDFInBackground() {
   try {
+    addLog('Generating PDF in background...', 'accent');
     const nameMatch = state.finalResume.match(/^([A-Z][a-z]+ [A-Z][a-z]+)/m);
     const name = nameMatch ? nameMatch[1] : 'resume';
 
@@ -291,14 +288,20 @@ async function generateAndShowResults() {
     const data = await res.json();
     if (!data.error) {
       state.pdfFilename = data.filename;
+      addLog('✓ PDF Ready for download', 'success');
+      // Update download button state if needed
     }
   } catch (e) {
     console.warn('PDF generation failed:', e);
+    addLog('PDF generation failed, will retry on click', 'error');
   }
+}
 
-  renderResults();
-  showPanel('results-panel');
+function handleError(event) {
+  addLog('ERROR: ' + event.message, 'error');
+  $('log-spinner').style.display = 'none';
   $('start-btn').disabled = false;
+  showToast('An error occurred. Check the log for details.', 'error');
 }
 
 function renderResults() {
@@ -454,8 +457,13 @@ function switchTab(tab) {
 
 // ── PDF Download ──────────────────────────────────────────────────────────
 async function downloadPDF() {
+  const btn = $('download-pdf-btn');
+  const originalText = btn.innerHTML;
+
   if (!state.pdfFilename) {
-    // Try to generate now
+    btn.disabled = true;
+    btn.innerHTML = '<span class="btn-icon">⏳</span> Generating...';
+    
     try {
       const nameMatch = state.finalResume.match(/^([A-Z][a-z]+ [A-Z][a-z]+)/m);
       const name = nameMatch ? nameMatch[1] : 'resume';
@@ -469,10 +477,15 @@ async function downloadPDF() {
       state.pdfFilename = data.filename;
     } catch (e) {
       showToast('PDF generation failed: ' + e.message, 'error');
+      btn.disabled = false;
+      btn.innerHTML = originalText;
       return;
     }
   }
 
+  btn.disabled = false;
+  btn.innerHTML = originalText;
+  
   const a = document.createElement('a');
   a.href = `/api/download/${state.pdfFilename}`;
   a.download = state.pdfFilename;
