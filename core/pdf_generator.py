@@ -183,7 +183,7 @@ def reconstruct_header(header_lines: list[str]) -> tuple[str, str, str]:
     non_empty = [l.strip() for l in header_lines if l.strip() and l.strip() not in ('|', '-', '/', ',', '–')]
     name, title, contact_parts = "", "", []
 
-    # ── Name detection ────────────────────────────────────────────────────────
+    # ── Name detection ────────────────────────────────────────────────────────────────────────────────
     # Priority 1: ALL-CAPS line that isn't a section keyword and has no contact info
     name_idx = -1
     for idx, line in enumerate(non_empty):
@@ -208,7 +208,7 @@ def reconstruct_header(header_lines: list[str]) -> tuple[str, str, str]:
         name = non_empty[0]
         name_idx = 0
 
-    # ── Title / Role detection ────────────────────────────────────────────────
+    # ── Title / Role detection ────────────────────────────────────────────────────────────────────────
     # The line immediately after the name (if it's short, has no contact info,
     # and doesn't look like a section header) is treated as the role/title.
     for idx, line in enumerate(non_empty):
@@ -390,9 +390,9 @@ def generate_pdf(resume_text: str, candidate_name: str = "resume", job_title: st
         pdf.body_text(line)
         i += 1
 
-    # Generate filename: FirstName_LastName_Resume_JobTitle.pdf
-    # Extract first and last name from candidate_name
-    name_parts = candidate_name.strip().split()
+    # Generate filename: firstname_lastname_Resume_MainJobTitle.pdf
+    # Extract first and last name from the actual name extracted from header
+    name_parts = name.strip().split()
     if len(name_parts) >= 2:
         first_name = name_parts[0]
         last_name = name_parts[-1]
@@ -403,10 +403,15 @@ def generate_pdf(resume_text: str, candidate_name: str = "resume", job_title: st
         first_name = "Resume"
         last_name = ""
     
-    # Sanitize job title for filename
-    safe_job_title = re.sub(r'[^a-zA-Z0-9_-]', '_', job_title).strip('_')[:40] if job_title else "Resume"
-    safe_first = re.sub(r'[^a-zA-Z0-9_-]', '_', first_name)
-    safe_last = re.sub(r'[^a-zA-Z0-9_-]', '_', last_name)
+    # Extract primary job title (before any | or -)
+    primary_job_title = job_title.split('|')[0].split('-')[0].strip() if job_title else "Resume"
+    # Limit to reasonable length
+    primary_job_title = primary_job_title[:35]
+    
+    # Sanitize for filename: remove special chars, convert to lowercase
+    safe_first = re.sub(r'[^a-zA-Z0-9]', '', first_name).lower()
+    safe_last = re.sub(r'[^a-zA-Z0-9]', '', last_name).lower()
+    safe_job_title = re.sub(r'[^a-zA-Z0-9\s]', '', primary_job_title).lower().replace(' ', '_').strip('_')
     
     # Build filename
     if safe_last:
