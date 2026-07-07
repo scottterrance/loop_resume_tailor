@@ -23,12 +23,13 @@ The prompt will be used to instruct an AI to rewrite the resume for maximum ATS 
 {gap_analysis}
 
 ## YOUR TASK
-Generate a concise yet high-impact tailoring prompt. Focus on:
-- Bridging critical gaps and integrating top ATS keywords.
-- Repositioning experience for this specific role.
-- Quantifying achievements and ensuring ATS-friendly formatting.
+Generate the ULTIMATE tailoring prompt. You must be aggressive:
+1. MANDATORY KEYWORDS: Identify every missing ATS keyword and force them into the resume naturally.
+2. ALIGNMENT: Rewrite job titles or summaries if needed to perfectly match the target role.
+3. IMPACT: Ensure every bullet point has a metric or quantified outcome.
+4. GAPS: Explicitly address how to frame existing experience to cover missing requirements (e.g., frame generic cloud exp as AWS-specific).
 
-Be direct and actionable. Output ONLY the prompt text."""
+The goal is a 100/100 ATS score. Output ONLY the prompt text."""
 
 
 REFINEMENT_PROMPT_TEMPLATE = """You are a world-class resume optimization expert.

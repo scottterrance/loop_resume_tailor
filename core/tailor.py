@@ -22,8 +22,8 @@ Your resumes are:
 
 Always output the complete resume in clean plain text format with clear section headers."""
 
-SCORE_TARGET = int(os.environ.get("SCORE_TARGET", "95"))
-MAX_ITERATIONS = int(os.environ.get("MAX_ITERATIONS", "5"))
+SCORE_TARGET = int(os.environ.get("SCORE_TARGET", "98"))
+MAX_ITERATIONS = int(os.environ.get("MAX_ITERATIONS", "8"))
 
 
 def generate_resume(base_resume: str, tailoring_prompt: str) -> str:
