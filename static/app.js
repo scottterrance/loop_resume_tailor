@@ -24,6 +24,23 @@ const showPanel = id => {
   $(id).classList.add('active');
 };
 
+// ── API Key Persistence (localStorage) ──────────────────────────────────
+(function initApiKey() {
+  const saved = localStorage.getItem('loop_rt_api_key');
+  if (saved) {
+    $('api-key').value = saved;
+  }
+})();
+
+$('api-key').addEventListener('input', () => {
+  const val = $('api-key').value.trim();
+  if (val) {
+    localStorage.setItem('loop_rt_api_key', val);
+  } else {
+    localStorage.removeItem('loop_rt_api_key');
+  }
+});
+
 // ── Character Counters ────────────────────────────────────────────────────
 $('resume-text').addEventListener('input', () => {
   $('resume-char-count').textContent = $('resume-text').value.length.toLocaleString() + ' characters';
@@ -82,6 +99,9 @@ async function startTailoring() {
   if (!resume) { showToast('Please provide your resume', 'error'); return; }
   if (!jd)     { showToast('Please provide the job description', 'error'); return; }
   if (!apiKey) { showToast('Please enter your DeepSeek API key', 'error'); return; }
+
+  // Persist key so user doesn't have to re-enter it
+  localStorage.setItem('loop_rt_api_key', apiKey);
 
   // Reset state
   state.jobId = null;
@@ -509,7 +529,10 @@ function copyPrompt() {
 // ── Reset ─────────────────────────────────────────────────────────────────
 function resetApp() {
   if (state.eventSource) state.eventSource.close();
+  // Restore persisted API key after panel reset
+  const savedKey = localStorage.getItem('loop_rt_api_key');
   showPanel('input-panel');
+  if (savedKey) $('api-key').value = savedKey;
   $('start-btn').disabled = false;
 }
 

@@ -182,27 +182,50 @@ def preprocess_resume(text: str) -> str:
 def reconstruct_header(header_lines: list[str]) -> tuple[str, str, str]:
     non_empty = [l.strip() for l in header_lines if l.strip() and l.strip() not in ('|', '-', '/', ',', '–')]
     name, title, contact_parts = "", "", []
-    
+
+    # ── Name detection ────────────────────────────────────────────────────────
+    # Priority 1: ALL-CAPS line that isn't a section keyword and has no contact info
     name_idx = -1
     for idx, line in enumerate(non_empty):
         if line.isupper() and not is_section_header(line) and not CONTACT_PATTERN.search(line):
             name = line
             name_idx = idx
             break
-    
+
+    # Priority 2: First line that looks like a proper name (Title Case, 2+ words, no contact)
+    if not name:
+        for idx, line in enumerate(non_empty):
+            words = line.split()
+            if (2 <= len(words) <= 5
+                    and all(w[0].isupper() for w in words if w)
+                    and not CONTACT_PATTERN.search(line)
+                    and not is_section_header(line)):
+                name = line
+                name_idx = idx
+                break
+
     if not name and non_empty:
         name = non_empty[0]
         name_idx = 0
-        
+
+    # ── Title / Role detection ────────────────────────────────────────────────
+    # The line immediately after the name (if it's short, has no contact info,
+    # and doesn't look like a section header) is treated as the role/title.
     for idx, line in enumerate(non_empty):
-        if idx == name_idx: continue
+        if idx == name_idx:
+            continue
         if CONTACT_PATTERN.search(line) or re.search(r'\d{3}', line):
             contact_parts.append(line)
-        elif not title and len(line) < 80:
-            title = line
+        elif not title and len(line) < 80 and not is_section_header(line):
+            # Accept as title only if it's the line right after the name
+            # OR if it's a short descriptive phrase (no digits, no @)
+            if idx == name_idx + 1 or (len(line.split()) <= 8 and not re.search(r'\d', line)):
+                title = line
+            else:
+                contact_parts.append(line)
         else:
             contact_parts.append(line)
-            
+
     contact_str = " | ".join(list(dict.fromkeys(contact_parts)))
     return (name or "Resume", title, contact_str)
 
@@ -260,7 +283,9 @@ class ResumePDF(FPDF):
         self.set_x(self.l_margin + 2)
         self.cell(3, 5, "-", ln=0)
         text = text.lstrip('-•*·– ').strip()
-        self.multi_cell(0, 5, text)
+        # Explicit width prevents overflow: page_width minus both margins minus indent (2+3=5mm)
+        usable_w = self.w - self.l_margin - self.r_margin - 5
+        self.multi_cell(usable_w, 5, text)
         self.ln(0.5)
 
     def body_text(self, text):

@@ -17,16 +17,24 @@ You create ATS-optimized, recruiter-approved resumes that get candidates to the 
 CRITICAL FORMATTING RULES — follow these exactly:
 1. Output ONLY plain text. No markdown, no asterisks, no pound signs, no HTML.
 2. Use standard ASCII characters only. No em-dashes (use ' - '), no smart quotes (use ' or "), no bullet symbols (use '-').
-3. Section headers must be ALL CAPS on their own line (e.g., SUMMARY, WORK EXPERIENCE, SKILLS, EDUCATION, PROJECTS).
-4. Bullet points must start with a hyphen and a space: '- '.
-5. Job entries follow this format:
+3. The resume MUST begin with exactly this 3-line header block:
+   Line 1: Candidate's full name (Title Case, e.g. John Smith)
+   Line 2: Target role / professional title (e.g. Senior AI Engineer | Machine Learning Specialist)
+   Line 3: Contact info separated by ' | ' (email | phone | location | LinkedIn | GitHub)
+   Example:
+   John Smith
+   Senior AI Engineer | Machine Learning Specialist
+   john@email.com | (555) 123-4567 | San Francisco, CA | linkedin.com/in/john | github.com/john
+4. Section headers must be ALL CAPS on their own line (e.g., SUMMARY, WORK EXPERIENCE, SKILLS, EDUCATION, PROJECTS).
+5. Bullet points must start with a hyphen and a space: '- '.
+6. Job entries follow this format:
    Job Title
    Company Name | City, State | Start Month Year - End Month Year (or Present)
    - Bullet point one
    - Bullet point two
-6. PRESERVE ALL SECTIONS from the original resume. If the original has a PROJECTS section, you MUST include it.
-7. Do not add extra blank lines between bullet points. One blank line between job blocks only.
-8. Keep the resume to 1-2 pages worth of content.
+7. PRESERVE ALL SECTIONS from the original resume. If the original has a PROJECTS section, you MUST include it.
+8. Do not add extra blank lines between bullet points. One blank line between job blocks only.
+9. Keep the resume to 1-2 pages worth of content.
 
 Your resumes are:
 - Perfectly structured with every section from the original preserved
@@ -55,6 +63,7 @@ def generate_resume(base_resume: str, tailoring_prompt: str) -> str:
 
 Generate the complete tailored resume now.
 IMPORTANT: Output ONLY the resume content in plain text. No markdown. No explanations.
+Line 1 = Full name (Title Case). Line 2 = Role/title. Line 3 = Contact info.
 ALL CAPS section headers. Hyphens for bullets. Standard ASCII only."""
         }
     ]
