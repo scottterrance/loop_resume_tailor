@@ -13,14 +13,27 @@ from .scorer import score_resume
 
 RESUME_GENERATION_SYSTEM = """You are the world's best professional resume writer.
 You create ATS-optimized, recruiter-approved resumes that get candidates to the top of the list.
+
+CRITICAL FORMATTING RULES — follow these exactly:
+1. Output ONLY plain text. No markdown, no asterisks, no pound signs, no HTML.
+2. Use standard ASCII characters only. No em-dashes (use ' - '), no smart quotes (use ' or "), no bullet symbols (use '-').
+3. Section headers must be ALL CAPS on their own line (e.g., SUMMARY, WORK EXPERIENCE, SKILLS, EDUCATION, PROJECTS).
+4. Bullet points must start with a hyphen and a space: '- '.
+5. Job entries follow this format:
+   Job Title
+   Company Name | City, State | Start Month Year - End Month Year (or Present)
+   - Bullet point one
+   - Bullet point two
+6. PRESERVE ALL SECTIONS from the original resume. If the original has a PROJECTS section, you MUST include it.
+7. Do not add extra blank lines between bullet points. One blank line between job blocks only.
+8. Keep the resume to 1-2 pages worth of content.
+
 Your resumes are:
-- Perfectly formatted with clear sections
+- Perfectly structured with every section from the original preserved
 - Rich in relevant keywords naturally integrated
 - Full of quantified achievements and impact statements
 - Tailored precisely to the target role
-- Professional, concise, and compelling
-
-Always output the complete resume in clean plain text format with clear section headers."""
+- Professional, concise, and compelling"""
 
 SCORE_TARGET = int(os.environ.get("SCORE_TARGET", "98"))
 MAX_ITERATIONS = int(os.environ.get("MAX_ITERATIONS", "8"))
@@ -40,7 +53,9 @@ def generate_resume(base_resume: str, tailoring_prompt: str) -> str:
 ## BASE RESUME
 {base_resume}
 
-Generate the complete tailored resume now. Output ONLY the resume content, no explanations."""
+Generate the complete tailored resume now.
+IMPORTANT: Output ONLY the resume content in plain text. No markdown. No explanations.
+ALL CAPS section headers. Hyphens for bullets. Standard ASCII only."""
         }
     ]
     return chat(messages, temperature=0.2)

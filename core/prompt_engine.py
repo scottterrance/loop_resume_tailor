@@ -23,13 +23,21 @@ The prompt will be used to instruct an AI to rewrite the resume for maximum ATS 
 {gap_analysis}
 
 ## YOUR TASK
-Generate the ULTIMATE tailoring prompt. You must be aggressive:
+Generate the ULTIMATE tailoring prompt. You must be aggressive on optimization but strict on preservation:
+
 1. MANDATORY KEYWORDS: Identify every missing ATS keyword and force them into the resume naturally.
 2. ALIGNMENT: Rewrite job titles or summaries if needed to perfectly match the target role.
 3. IMPACT: Ensure every bullet point has a metric or quantified outcome.
-4. GAPS: Explicitly address how to frame existing experience to cover missing requirements (e.g., frame generic cloud exp as AWS-specific).
+4. GAPS: Explicitly address how to frame existing experience to cover missing requirements.
+5. SECTION PRESERVATION: The tailored resume MUST include ALL sections from the original resume.
+   If the original has a PROJECTS section, explicitly instruct to preserve and enhance it.
+   Never drop Education, Projects, Certifications, or any other section present in the original.
+6. FORMAT RULES: Instruct the AI to use plain ASCII text only — no markdown, no special Unicode
+   characters, no em-dashes, no smart quotes, no bullet symbols (use hyphens '-' only).
+   Section headers must be ALL CAPS. Bullets start with '- '.
 
-The goal is a 100/100 ATS score. Output ONLY the prompt text."""
+The goal is a 100/100 ATS score with a complete, professionally formatted resume.
+Output ONLY the prompt text."""
 
 
 REFINEMENT_PROMPT_TEMPLATE = """You are a world-class resume optimization expert.
@@ -49,6 +57,11 @@ The resume scored {total_score}/100. Here is what needs improvement:
 Rewrite and improve the tailoring prompt to address ALL identified weaknesses.
 Focus especially on:
 {refinement_focus}
+
+CRITICAL: The improved prompt must still enforce:
+- ALL original resume sections preserved (especially PROJECTS if present)
+- Plain ASCII text output only (no markdown, no Unicode special characters)
+- ALL CAPS section headers, hyphens for bullets
 
 The new prompt must be more specific, more targeted, and must fix every identified gap.
 Output ONLY the improved tailoring prompt text, no preamble or explanation."""

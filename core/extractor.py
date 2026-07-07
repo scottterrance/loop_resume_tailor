@@ -30,9 +30,16 @@ def extract_text_from_file(file_path: str) -> str:
 def clean_resume_text(text: str) -> str:
     """Clean and normalize resume text."""
     import re
-    # Remove excessive whitespace
+    # Normalize multiple spaces within lines (common in pdfminer output)
+    lines = text.split('\n')
+    lines = [re.sub(r' {2,}', ' ', line) for line in lines]
+    text = '\n'.join(lines)
+    # Remove excessive blank lines
     text = re.sub(r'\n{3,}', '\n\n', text)
-    text = re.sub(r' {2,}', ' ', text)
-    # Remove non-printable characters
+    # Remove non-printable characters (but preserve newlines)
     text = re.sub(r'[^\x20-\x7E\n]', ' ', text)
+    # Clean up spaces left by non-printable removal
+    lines = text.split('\n')
+    lines = [re.sub(r' {2,}', ' ', line).strip() for line in lines]
+    text = '\n'.join(lines)
     return text.strip()

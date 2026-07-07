@@ -58,10 +58,19 @@ Return a JSON object with this exact structure:
       "key_bullets": ["2-3 most impactful bullet points"]
     }}
   ],
+  "projects": [
+    {{
+      "name": "project name",
+      "description": "brief description",
+      "technologies": ["tech stack used"],
+      "impact": "measurable outcome or impact if mentioned"
+    }}
+  ],
   "gaps_and_weaknesses": ["areas where resume may be weak or missing common expectations"],
   "strengths": ["clear strengths that stand out"],
   "resume_style": "chronological/functional/hybrid",
-  "quantification_level": "low/medium/high (how well achievements are quantified)"
+  "quantification_level": "low/medium/high (how well achievements are quantified)",
+  "has_projects_section": true
 }}"""
 
 GAP_ANALYSIS_PROMPT = """You are a senior technical recruiter performing a gap analysis.
@@ -88,31 +97,49 @@ Perform a detailed gap analysis and return a JSON object:
 
 
 def analyze_jd(jd_text: str) -> dict:
-    """Extract structured signals from a job description."""
+    """Analyze a job description and return structured signals."""
     messages = [
-        {"role": "system", "content": "You are an expert ATS specialist and technical recruiter. Always respond with valid JSON."},
-        {"role": "user", "content": JD_ANALYSIS_PROMPT.format(jd=jd_text)}
+        {
+            "role": "system",
+            "content": "You are an expert technical recruiter. Return only valid JSON."
+        },
+        {
+            "role": "user",
+            "content": JD_ANALYSIS_PROMPT.format(jd=jd_text)
+        }
     ]
-    return chat_json(messages)
+    return chat_json(messages, temperature=0.1)
 
 
 def analyze_resume(resume_text: str) -> dict:
-    """Extract structured profile from a resume."""
+    """Analyze a resume and return structured profile including projects."""
     messages = [
-        {"role": "system", "content": "You are an expert resume coach. Always respond with valid JSON."},
-        {"role": "user", "content": RESUME_ANALYSIS_PROMPT.format(resume=resume_text)}
+        {
+            "role": "system",
+            "content": "You are an expert resume coach. Return only valid JSON."
+        },
+        {
+            "role": "user",
+            "content": RESUME_ANALYSIS_PROMPT.format(resume=resume_text)
+        }
     ]
-    return chat_json(messages)
+    return chat_json(messages, temperature=0.1)
 
 
 def analyze_gaps(jd_analysis: dict, resume_analysis: dict) -> dict:
     """Perform gap analysis between JD requirements and resume."""
     import json
     messages = [
-        {"role": "system", "content": "You are a senior technical recruiter. Always respond with valid JSON."},
-        {"role": "user", "content": GAP_ANALYSIS_PROMPT.format(
-            jd_analysis=json.dumps(jd_analysis, indent=2),
-            resume_analysis=json.dumps(resume_analysis, indent=2)
-        )}
+        {
+            "role": "system",
+            "content": "You are a senior technical recruiter. Return only valid JSON."
+        },
+        {
+            "role": "user",
+            "content": GAP_ANALYSIS_PROMPT.format(
+                jd_analysis=json.dumps(jd_analysis, indent=2),
+                resume_analysis=json.dumps(resume_analysis, indent=2)
+            )
+        }
     ]
-    return chat_json(messages)
+    return chat_json(messages, temperature=0.1)
