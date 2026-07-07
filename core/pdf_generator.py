@@ -265,7 +265,36 @@ class ResumePDF(FPDF):
 
     def body_text(self, text):
         self.set_font("Times", "", 9.5)
-        self.multi_cell(0, 5, text)
+        # If this is a skills block with multiple categories (e.g., "AI/ML: ... Backend: ...")
+        # split them into separate lines for better readability.
+        # We look for "Category Name:" patterns.
+        categories = ["AI/ML:", "Backend:", "Frontend:", "Cloud & DevOps:", "Data:", "Security:", "Tools:", "Languages:"]
+        
+        # Check if multiple categories exist in this one line
+        found_categories = []
+        for cat in categories:
+            if cat in text:
+                found_categories.append(cat)
+        
+        if len(found_categories) > 1:
+            # Split and render each category
+            parts = [text]
+            for cat in found_categories[1:]:
+                new_parts = []
+                for p in parts:
+                    if cat in p:
+                        split_p = p.split(cat)
+                        new_parts.append(split_p[0].strip())
+                        new_parts.append(cat + split_p[1])
+                    else:
+                        new_parts.append(p)
+                parts = new_parts
+            
+            for p in parts:
+                if p.strip():
+                    self.multi_cell(0, 5, p.strip())
+        else:
+            self.multi_cell(0, 5, text)
         self.ln(1)
 
 
