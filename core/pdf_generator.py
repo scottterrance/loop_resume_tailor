@@ -254,14 +254,18 @@ class ResumePDF(FPDF):
 
     def section_title(self, label):
         self.set_font("Times", "B", 11)
-        self.cell(0, 8, label.upper(), ln=1)
+        usable_w = self.w - self.l_margin - self.r_margin
+        # Use multi_cell for long section titles
+        self.multi_cell(usable_w, 8, label.upper())
         curr_y = self.get_y() - 1
-        self.line(self.l_margin, curr_y, 216 - self.r_margin, curr_y)
+        self.line(self.l_margin, curr_y, self.w - self.r_margin, curr_y)
         self.ln(2)
 
     def job_header(self, title, company_date):
         self.set_font("Times", "B", 10)
-        self.cell(0, 5, title, ln=1)
+        usable_w = self.w - self.l_margin - self.r_margin
+        # Use multi_cell for job title to prevent overflow on long titles
+        self.multi_cell(usable_w, 5, title)
         
         if company_date:
             if '|' in company_date:
@@ -270,12 +274,15 @@ class ResumePDF(FPDF):
                 date = parts[-1]
                 
                 self.set_font("Times", "I", 9.5)
-                self.cell(140, 5, company, ln=0)
+                # Use multi_cell for company info to prevent overflow
+                self.multi_cell(usable_w - 50, 5, company)
                 self.set_font("Times", "", 9)
-                self.cell(0, 5, date, ln=1, align='R')
+                # Position date on the right
+                self.set_xy(self.w - self.r_margin - 45, self.get_y() - 5)
+                self.cell(45, 5, date, ln=1, align='R')
             else:
                 self.set_font("Times", "I", 9.5)
-                self.cell(0, 5, company_date, ln=1)
+                self.multi_cell(usable_w, 5, company_date)
         self.ln(1)
 
     def bullet_point(self, text):
@@ -290,10 +297,17 @@ class ResumePDF(FPDF):
 
     def body_text(self, text):
         self.set_font("Times", "", 9.5)
+        # Explicit width to prevent overflow
+        usable_w = self.w - self.l_margin - self.r_margin
+        
         # If this is a skills block with multiple categories (e.g., "AI/ML: ... Backend: ...")
         # split them into separate lines for better readability.
         # We look for "Category Name:" patterns.
-        categories = ["AI/ML:", "Backend:", "Frontend:", "Cloud & DevOps:", "Data:", "Security:", "Tools:", "Languages:"]
+        categories = [
+            "AI/ML:", "Backend:", "Frontend:", "Cloud & DevOps:", "Data:", "Security:", "Tools:", "Languages:",
+            "Testing & Quality:", "QA:", "DevOps:", "Infrastructure:", "Databases:", "Frameworks:",
+            "Libraries:", "Platforms:", "Methodologies:", "Soft Skills:", "Domain Knowledge:"
+        ]
         
         # Check if multiple categories exist in this one line
         found_categories = []
@@ -317,9 +331,9 @@ class ResumePDF(FPDF):
             
             for p in parts:
                 if p.strip():
-                    self.multi_cell(0, 5, p.strip())
+                    self.multi_cell(usable_w, 5, p.strip())
         else:
-            self.multi_cell(0, 5, text)
+            self.multi_cell(usable_w, 5, text)
         self.ln(1)
 
 
