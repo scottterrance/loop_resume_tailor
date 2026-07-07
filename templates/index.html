@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loop Resume Tailor — AI-Powered ATS Optimization</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- ── Header ──────────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">⟳</span>
+        <span class="logo-text">Loop<strong>Resume</strong></span>
+        <span class="logo-tag">AI Tailor</span>
+      </div>
+      <div class="header-tagline">World-class ATS optimization · Powered by DeepSeek</div>
+    </div>
+  </header>
+
+  <!-- ── Main App ─────────────────────────────────────────────────── -->
+  <main class="app-main">
+
+    <!-- ── Step 1: Input Panel ──────────────────────────────────── -->
+    <section id="input-panel" class="panel active">
+      <div class="panel-header">
+        <h2>Step 1 — Provide Your Resume &amp; Job Description</h2>
+        <p class="panel-subtitle">The AI will analyze both, generate a custom tailoring strategy, and iteratively optimize until your resume scores ~100.</p>
+      </div>
+
+      <div class="input-grid">
+        <!-- API Key -->
+        <div class="input-block full-width">
+          <label class="input-label">
+            <span class="label-icon">🔑</span>
+            DeepSeek API Key
+            <span class="label-hint">(stored in session only, never saved)</span>
+          </label>
+          <input
+            type="password"
+            id="api-key"
+            class="text-input"
+            placeholder="sk-..."
+            autocomplete="off"
+          />
+        </div>
+
+        <!-- Resume Input -->
+        <div class="input-block">
+          <label class="input-label">
+            <span class="label-icon">📄</span>
+            Your Base Resume
+            <span class="label-hint">(paste text or upload PDF)</span>
+          </label>
+          <div class="upload-zone" id="resume-upload-zone">
+            <div class="upload-hint">
+              <span class="upload-icon">⬆</span>
+              Drop PDF here or <button class="link-btn" onclick="document.getElementById('resume-file').click()">browse</button>
+            </div>
+            <input type="file" id="resume-file" accept=".pdf,.txt" style="display:none" />
+          </div>
+          <textarea
+            id="resume-text"
+            class="text-area"
+            placeholder="Paste your resume text here, or upload a PDF above..."
+            rows="18"
+          ></textarea>
+          <div class="char-count" id="resume-char-count">0 characters</div>
+        </div>
+
+        <!-- JD Input -->
+        <div class="input-block">
+          <label class="input-label">
+            <span class="label-icon">💼</span>
+            Job Description
+            <span class="label-hint">(paste the full JD)</span>
+          </label>
+          <textarea
+            id="jd-text"
+            class="text-area"
+            placeholder="Paste the complete job description here..."
+            rows="20"
+          ></textarea>
+          <div class="char-count" id="jd-char-count">0 characters</div>
+        </div>
+      </div>
+
+      <!-- Settings Row -->
+      <div class="settings-row">
+        <div class="setting-item">
+          <label class="setting-label">Max Iterations</label>
+          <select id="max-iterations" class="setting-select">
+            <option value="3">3 (Fast)</option>
+            <option value="5" selected>5 (Recommended)</option>
+            <option value="7">7 (Thorough)</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label class="setting-label">Score Target</label>
+          <select id="score-target" class="setting-select">
+            <option value="90">90+ (Good)</option>
+            <option value="95" selected>95+ (Excellent)</option>
+            <option value="98">98+ (Perfect)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button id="start-btn" class="btn btn-primary btn-large" onclick="startTailoring()">
+          <span class="btn-icon">⟳</span>
+          Start AI Tailoring Loop
+        </button>
+        <p class="action-note">Typical run: 3–8 minutes depending on iterations</p>
+      </div>
+    </section>
+
+    <!-- ── Step 2: Progress Panel ───────────────────────────────── -->
+    <section id="progress-panel" class="panel">
+      <div class="panel-header">
+        <h2>Step 2 — AI Tailoring in Progress</h2>
+        <p class="panel-subtitle">Watch the AI analyze, generate, score, and refine your resume in real time.</p>
+      </div>
+
+      <!-- Overall Progress -->
+      <div class="progress-overview">
+        <div class="progress-phase" id="phase-analyze">
+          <div class="phase-dot"></div>
+          <span>Analyze</span>
+        </div>
+        <div class="phase-connector"></div>
+        <div class="progress-phase" id="phase-prompt">
+          <div class="phase-dot"></div>
+          <span>Prompt</span>
+        </div>
+        <div class="phase-connector"></div>
+        <div class="progress-phase" id="phase-loop">
+          <div class="phase-dot"></div>
+          <span>Loop</span>
+        </div>
+        <div class="phase-connector"></div>
+        <div class="progress-phase" id="phase-complete">
+          <div class="phase-dot"></div>
+          <span>Complete</span>
+        </div>
+      </div>
+
+      <!-- Live Log -->
+      <div class="log-container">
+        <div class="log-header">
+          <span class="log-title">Live Progress</span>
+          <span class="log-spinner" id="log-spinner">●</span>
+        </div>
+        <div id="log-output" class="log-output"></div>
+      </div>
+
+      <!-- Iteration Score Cards -->
+      <div id="iteration-cards" class="iteration-cards"></div>
+    </section>
+
+    <!-- ── Step 3: Results Panel ─────────────────────────────────── -->
+    <section id="results-panel" class="panel">
+      <div class="panel-header">
+        <h2>Step 3 — Your Optimized Resume</h2>
+        <p class="panel-subtitle">Your resume has been tailored and scored. Download the PDF and apply with confidence.</p>
+      </div>
+
+      <!-- Score Dashboard -->
+      <div class="score-dashboard" id="score-dashboard">
+        <div class="score-hero">
+          <div class="score-circle" id="score-circle">
+            <div class="score-number" id="final-score-number">--</div>
+            <div class="score-label">/ 100</div>
+          </div>
+          <div class="score-meta">
+            <div class="score-grade" id="score-grade">--</div>
+            <div class="score-verdict" id="score-verdict">Analyzing...</div>
+          </div>
+        </div>
+
+        <div class="score-breakdown" id="score-breakdown">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <!-- Analysis Summary -->
+      <div class="analysis-summary" id="analysis-summary">
+        <!-- Filled by JS -->
+      </div>
+
+      <!-- Resume Tabs -->
+      <div class="resume-tabs">
+        <button class="tab-btn active" onclick="switchTab('tailored')">Tailored Resume</button>
+        <button class="tab-btn" onclick="switchTab('prompt')">Final Prompt</button>
+        <button class="tab-btn" onclick="switchTab('iterations')">All Iterations</button>
+      </div>
+
+      <div id="tab-tailored" class="tab-content active">
+        <div class="resume-toolbar">
+          <button class="btn btn-primary" id="download-pdf-btn" onclick="downloadPDF()">
+            <span class="btn-icon">⬇</span> Download PDF
+          </button>
+          <button class="btn btn-secondary" onclick="copyResume()">
+            <span class="btn-icon">⎘</span> Copy Text
+          </button>
+          <button class="btn btn-ghost" onclick="resetApp()">
+            <span class="btn-icon">⟳</span> Start Over
+          </button>
+        </div>
+        <pre id="final-resume-text" class="resume-preview"></pre>
+      </div>
+
+      <div id="tab-prompt" class="tab-content">
+        <div class="prompt-box">
+          <div class="prompt-header">
+            <span>Ultimate Tailoring Prompt</span>
+            <button class="btn btn-secondary btn-sm" onclick="copyPrompt()">Copy Prompt</button>
+          </div>
+          <pre id="final-prompt-text" class="prompt-preview"></pre>
+        </div>
+      </div>
+
+      <div id="tab-iterations" class="tab-content">
+        <div id="iterations-detail" class="iterations-detail">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Toast Notification ──────────────────────────────────────── -->
+  <div id="toast" class="toast"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
