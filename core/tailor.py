@@ -69,17 +69,20 @@ def run_tailor_loop(
         return event
 
     try:
-        # ── Step 1: Analyze JD ──────────────────────────────────────────────
-        yield emit({"type": "progress", "step": "analyze_jd", "message": "Analyzing job description..."})
-        jd_analysis = analyze_jd(jd_text)
-        yield emit({"type": "progress", "step": "analyze_jd_done",
-                    "message": f"JD analyzed: {jd_analysis.get('job_title', 'Role')} at {jd_analysis.get('company_name', 'Company')}"})
+        # ── Step 1 & 2: Parallel Analysis ───────────────────────────────────
+        yield emit({"type": "progress", "step": "analyze_start", "message": "Starting parallel analysis of JD and Resume..."})
+        
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            future_jd = executor.submit(analyze_jd, jd_text)
+            future_resume = executor.submit(analyze_resume, base_resume)
+            
+            # Wait for both to complete
+            jd_analysis = future_jd.result()
+            resume_analysis = future_resume.result()
 
-        # ── Step 2: Analyze Resume ──────────────────────────────────────────
-        yield emit({"type": "progress", "step": "analyze_resume", "message": "Analyzing your resume..."})
-        resume_analysis = analyze_resume(base_resume)
-        yield emit({"type": "progress", "step": "analyze_resume_done",
-                    "message": f"Resume analyzed: {resume_analysis.get('candidate_name', 'Candidate')} — {resume_analysis.get('years_experience', '?')} years experience"})
+        yield emit({"type": "progress", "step": "analyze_done",
+                    "message": f"Analysis complete: {jd_analysis.get('job_title', 'Role')} at {jd_analysis.get('company_name', 'Company')}"})
 
         # ── Step 3: Gap Analysis ────────────────────────────────────────────
         yield emit({"type": "progress", "step": "gap_analysis", "message": "Performing gap analysis..."})

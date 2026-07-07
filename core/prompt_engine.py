@@ -23,19 +23,12 @@ The prompt will be used to instruct an AI to rewrite the resume for maximum ATS 
 {gap_analysis}
 
 ## YOUR TASK
-Generate a comprehensive, highly specific tailoring prompt that:
-1. Addresses every critical gap identified
-2. Maximizes keyword density for the specific ATS keywords
-3. Repositions the candidate's experience to match the role
-4. Instructs on quantification improvements
-5. Specifies exact formatting requirements
-6. Includes the candidate's actual experience details to preserve authenticity
+Generate a concise yet high-impact tailoring prompt. Focus on:
+- Bridging critical gaps and integrating top ATS keywords.
+- Repositioning experience for this specific role.
+- Quantifying achievements and ensuring ATS-friendly formatting.
 
-The prompt should be detailed, actionable, and specific to THIS candidate and THIS role.
-Write the prompt as if you are giving instructions to the best resume writer in the world.
-The prompt must result in a resume that ranks #1 in the recruiter's applicant list.
-
-Output ONLY the tailoring prompt text, no preamble or explanation."""
+Be direct and actionable. Output ONLY the prompt text."""
 
 
 REFINEMENT_PROMPT_TEMPLATE = """You are a world-class resume optimization expert.
