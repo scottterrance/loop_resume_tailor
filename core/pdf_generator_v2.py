@@ -51,6 +51,16 @@ def parse_resume_text(resume_text: str) -> dict:
             header_end = i
             break
     
+    # Known primary section headers to prevent misidentifying sub-skills or languages
+    VALID_HEADERS = {
+        "PROFESSIONAL SUMMARY", "SUMMARY", "OBJECTIVE", "PROFILE",
+        "TECHNICAL SKILLS", "SKILLS", "CORE COMPETENCIES", "TECHNOLOGIES",
+        "WORK EXPERIENCE", "EXPERIENCE", "EMPLOYMENT HISTORY",
+        "PROJECTS", "PERSONAL PROJECTS", "ACADEMIC PROJECTS",
+        "EDUCATION", "ACADEMIC BACKGROUND",
+        "CERTIFICATIONS", "AWARDS", "LANGUAGES", "VOLUNTEER EXPERIENCE"
+    }
+
     # Parse sections
     sections = {}
     current_section = None
@@ -62,13 +72,24 @@ def parse_resume_text(resume_text: str) -> dict:
         if not stripped:
             continue
         
-        # Check if this is a section header (ALL CAPS)
-        if stripped.isupper() and len(stripped) < 60 and not any(c.isdigit() for c in stripped):
+        # Check if this is a section header
+        # A valid header is ALL CAPS and either:
+        # 1. Is in our VALID_HEADERS list
+        # 2. Is ALL CAPS, short, has no digits, AND doesn't look like a skill line (no colons)
+        is_header = False
+        clean_header = stripped.replace(':', '').strip()
+        
+        if clean_header in VALID_HEADERS:
+            is_header = True
+        elif stripped.isupper() and len(stripped) < 50 and not any(c.isdigit() for c in stripped) and ":" not in stripped:
+            is_header = True
+
+        if is_header:
             # Save previous section
             if current_section and current_content:
                 sections[current_section] = current_content
             
-            current_section = stripped
+            current_section = clean_header
             current_content = []
         else:
             if current_section:

@@ -24,9 +24,9 @@ const showPanel = id => {
   $(id).classList.add('active');
 };
 
-  // ── API Key Persistence (sessionStorage) ──────────────────────────────────
+  // ── API Key Persistence (localStorage - Permanent) ───────────────────────
   (function initApiKey() {
-    const saved = sessionStorage.getItem('loop_rt_api_key');
+    const saved = localStorage.getItem('loop_rt_api_key');
     if (saved) {
       $('api-key').value = saved;
     }
@@ -35,9 +35,9 @@ const showPanel = id => {
   $('api-key').addEventListener('input', () => {
     const val = $('api-key').value.trim();
     if (val) {
-      sessionStorage.setItem('loop_rt_api_key', val);
+      localStorage.setItem('loop_rt_api_key', val);
     } else {
-      sessionStorage.removeItem('loop_rt_api_key');
+      localStorage.removeItem('loop_rt_api_key');
     }
   });
 
@@ -101,7 +101,7 @@ async function startTailoring() {
   if (!apiKey) { showToast('Please enter your DeepSeek API key', 'error'); return; }
 
   // Persist key so user doesn't have to re-enter it
-  sessionStorage.setItem('loop_rt_api_key', apiKey);
+  localStorage.setItem('loop_rt_api_key', apiKey);
 
   // Reset state
   state.jobId = null;
