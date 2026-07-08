@@ -83,7 +83,8 @@ def generate_initial_prompt(jd_analysis: dict, resume_analysis: dict, gap_analys
             )
         }
     ]
-    return chat(messages, temperature=0.4)
+    # Use reasoner for strategic prompt engineering
+    return chat(messages, temperature=0.4, model="deepseek-reasoner")
 
 
 def refine_prompt(previous_prompt: str, score_result: dict, iteration: int) -> str:
@@ -128,4 +129,5 @@ def refine_prompt(previous_prompt: str, score_result: dict, iteration: int) -> s
             )
         }
     ]
-    return chat(messages, temperature=0.3)
+    # Use reasoner for strategic prompt refinement
+    return chat(messages, temperature=0.3, model="deepseek-reasoner")

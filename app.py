@@ -103,7 +103,9 @@ def start_tailor():
 
     def run_job():
         from core.tailor import run_tailor_loop
+        import traceback
         try:
+            print(f"Starting background job: {job_id}")
             for event in run_tailor_loop(resume_text, jd_text):
                 _job_events[job_id].append(event)
                 if event.get("type") == "complete":
@@ -113,10 +115,13 @@ def start_tailor():
                     _jobs[job_id]["status"] = "error"
                     _jobs[job_id]["error"] = event.get("message")
         except Exception as e:
+            error_msg = f"Thread Error: {str(e)}\n{traceback.format_exc()}"
+            print(error_msg)
             _job_events[job_id].append({"type": "error", "message": str(e)})
             _jobs[job_id]["status"] = "error"
         finally:
             _job_locks[job_id].set()
+            print(f"Background job finished: {job_id}")
 
     thread = threading.Thread(target=run_job, daemon=True)
     thread.start()

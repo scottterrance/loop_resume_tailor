@@ -108,7 +108,8 @@ def analyze_jd(jd_text: str) -> dict:
             "content": JD_ANALYSIS_PROMPT.format(jd=jd_text)
         }
     ]
-    return chat_json(messages, temperature=0.1)
+    # Use reasoner for high-accuracy extraction
+    return chat_json(messages, temperature=0.1, model="deepseek-reasoner")
 
 
 def analyze_resume(resume_text: str) -> dict:
@@ -123,7 +124,8 @@ def analyze_resume(resume_text: str) -> dict:
             "content": RESUME_ANALYSIS_PROMPT.format(resume=resume_text)
         }
     ]
-    return chat_json(messages, temperature=0.1)
+    # Use reasoner for high-accuracy extraction
+    return chat_json(messages, temperature=0.1, model="deepseek-reasoner")
 
 
 def analyze_gaps(jd_analysis: dict, resume_analysis: dict) -> dict:
@@ -142,4 +144,5 @@ def analyze_gaps(jd_analysis: dict, resume_analysis: dict) -> dict:
             )
         }
     ]
-    return chat_json(messages, temperature=0.1)
+    # Use reasoner for high-accuracy extraction
+    return chat_json(messages, temperature=0.1, model="deepseek-reasoner")
