@@ -14,7 +14,11 @@ import os
 import re
 from pathlib import Path
 from jinja2 import Template
-from weasyprint import WeasyPrint, CSS, HTML
+try:
+    from weasyprint import HTML
+    HAS_WEASYPRINT = True
+except (ImportError, OSError):
+    HAS_WEASYPRINT = False
 from io import BytesIO
 
 OUTPUT_DIR = Path(__file__).parent.parent / "outputs"
@@ -262,16 +266,14 @@ def extract_certifications(sections: dict) -> list:
 
 def generate_pdf(resume_text: str, candidate_name: str = "resume", job_title: str = "") -> str:
     """
-    Generate a professional PDF from plain-text resume using WeasyPrint.
-    
-    Args:
-        resume_text: Plain-text resume content
-        candidate_name: Candidate name (used in filename)
-        job_title: Target job title (used in filename)
-    
-    Returns:
-        Path to generated PDF file
+    Generate a professional PDF from plain-text resume.
+    Uses WeasyPrint if available, otherwise falls back to legacy fpdf generator.
     """
+    if not HAS_WEASYPRINT:
+        print("WeasyPrint dependencies not found. Falling back to legacy fpdf generator.")
+        from .pdf_generator import generate_pdf as legacy_generate_pdf
+        return legacy_generate_pdf(resume_text, candidate_name, job_title)
+
     # Parse resume
     parsed = parse_resume_text(resume_text)
     sections = parsed["sections"]
