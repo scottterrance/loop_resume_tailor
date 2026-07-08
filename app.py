@@ -75,6 +75,8 @@ def start_tailor():
     resume_text = data.get("resume", "").strip()
     jd_text = data.get("jd", "").strip()
     api_key = data.get("api_key", "").strip()
+    max_iterations = data.get("max_iterations")
+    score_target = data.get("score_target")
 
     if not resume_text:
         return jsonify({"error": "Resume text is required"}), 400
@@ -86,7 +88,13 @@ def start_tailor():
         os.environ["LLM_API_KEY"] = api_key
         # Reset client so it picks up new key
         import core.llm as llm_module
-        llm_module._client = None
+        llm_module._clients = {}
+
+    # Update loop settings if provided
+    if max_iterations:
+        os.environ["MAX_ITERATIONS"] = str(max_iterations)
+    if score_target:
+        os.environ["SCORE_TARGET"] = str(score_target)
 
     job_id = str(uuid.uuid4())
     _jobs[job_id] = {"status": "running", "events": []}
@@ -158,7 +166,7 @@ def stream_job(job_id: str):
 @app.route("/api/generate-pdf", methods=["POST"])
 def generate_pdf_endpoint():
     """Generate a PDF from the tailored resume text."""
-    from core.pdf_generator import generate_pdf
+    from core.pdf_generator_v2 import generate_pdf
 
     data = request.get_json()
     if not data:

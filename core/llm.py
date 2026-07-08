@@ -5,31 +5,29 @@ Provides a simple interface for chat completions with JSON mode support.
 
 import os
 import json
+import re
 from openai import OpenAI
 
-_client = None
+_clients = {}
 
-
-def get_client() -> OpenAI:
-    global _client
-    if _client is None:
-        _client = OpenAI(
+def get_client(model_name: str) -> OpenAI:
+    if model_name not in _clients:
+        _clients[model_name] = OpenAI(
             api_key=os.environ.get("LLM_API_KEY", ""),
             base_url=os.environ.get("LLM_BASE_URL", "https://api.deepseek.com/v1"),
         )
-    return _client
+    return _clients[model_name]
 
-
-def chat(messages: list[dict], json_mode: bool = False, temperature: float = 0.3) -> str:
+def chat(messages: list[dict], json_mode: bool = False, temperature: float = 0.3, model: str = None) -> str:
     """
     Send a chat completion request to DeepSeek.
     Returns the response content as a string.
     """
-    client = get_client()
-    model = os.environ.get("LLM_MODEL", "deepseek-chat")
+    model_to_use = model or os.environ.get("LLM_MODEL", "deepseek-chat")
+    client = get_client(model_to_use)
 
     kwargs = {
-        "model": model,
+        "model": model_to_use,
         "messages": messages,
         "temperature": temperature,
     }
@@ -40,17 +38,15 @@ def chat(messages: list[dict], json_mode: bool = False, temperature: float = 0.3
     response = client.chat.completions.create(**kwargs)
     return response.choices[0].message.content
 
-
-def chat_json(messages: list[dict], temperature: float = 0.2) -> dict:
+def chat_json(messages: list[dict], temperature: float = 0.2, model: str = None) -> dict:
     """
     Send a chat completion request and parse the response as JSON.
     """
-    raw = chat(messages, json_mode=True, temperature=temperature)
+    raw = chat(messages, json_mode=True, temperature=temperature, model=model)
     try:
         return json.loads(raw)
     except json.JSONDecodeError:
         # Attempt to extract JSON from markdown code blocks
-        import re
         match = re.search(r"```(?:json)?\s*([\s\S]+?)\s*```", raw)
         if match:
             return json.loads(match.group(1))

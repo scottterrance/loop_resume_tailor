@@ -72,6 +72,7 @@ def score_resume(tailored_resume: str, jd_text: str, jd_analysis: dict) -> dict:
     """
     Score a tailored resume against the job description.
     Returns a structured scoring result with diagnosis and refinement instructions.
+    Uses DeepSeek-R1 for superior reasoning and stricter evaluation.
     """
     messages = [
         {
@@ -87,7 +88,8 @@ def score_resume(tailored_resume: str, jd_text: str, jd_analysis: dict) -> dict:
             )
         }
     ]
-    result = chat_json(messages, temperature=0.1)
+    # Use DeepSeek-R1 for scoring to ensure adversarial validation
+    result = chat_json(messages, temperature=0.1, model="deepseek-reasoner")
 
     # Ensure total is computed correctly
     computed_total = (

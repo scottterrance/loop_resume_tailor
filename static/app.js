@@ -24,22 +24,22 @@ const showPanel = id => {
   $(id).classList.add('active');
 };
 
-// ── API Key Persistence (localStorage) ──────────────────────────────────
-(function initApiKey() {
-  const saved = localStorage.getItem('loop_rt_api_key');
-  if (saved) {
-    $('api-key').value = saved;
-  }
-})();
+  // ── API Key Persistence (sessionStorage) ──────────────────────────────────
+  (function initApiKey() {
+    const saved = sessionStorage.getItem('loop_rt_api_key');
+    if (saved) {
+      $('api-key').value = saved;
+    }
+  })();
 
-$('api-key').addEventListener('input', () => {
-  const val = $('api-key').value.trim();
-  if (val) {
-    localStorage.setItem('loop_rt_api_key', val);
-  } else {
-    localStorage.removeItem('loop_rt_api_key');
-  }
-});
+  $('api-key').addEventListener('input', () => {
+    const val = $('api-key').value.trim();
+    if (val) {
+      sessionStorage.setItem('loop_rt_api_key', val);
+    } else {
+      sessionStorage.removeItem('loop_rt_api_key');
+    }
+  });
 
 // ── Character Counters ────────────────────────────────────────────────────
 $('resume-text').addEventListener('input', () => {
@@ -101,7 +101,7 @@ async function startTailoring() {
   if (!apiKey) { showToast('Please enter your DeepSeek API key', 'error'); return; }
 
   // Persist key so user doesn't have to re-enter it
-  localStorage.setItem('loop_rt_api_key', apiKey);
+  sessionStorage.setItem('loop_rt_api_key', apiKey);
 
   // Reset state
   state.jobId = null;
@@ -130,7 +130,13 @@ async function startTailoring() {
     const res = await fetch('/api/tailor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ resume, jd, api_key: apiKey })
+      body: JSON.stringify({ 
+        resume, 
+        jd, 
+        api_key: apiKey,
+        max_iterations: parseInt($('max-iterations').value),
+        score_target: parseInt($('score-target').value)
+      })
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error);

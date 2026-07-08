@@ -10,6 +10,7 @@ from .llm import chat
 from .analyzer import analyze_jd, analyze_resume, analyze_gaps
 from .prompt_engine import generate_initial_prompt, refine_prompt
 from .scorer import score_resume
+from .pdf_generator_v2 import generate_pdf
 
 RESUME_GENERATION_SYSTEM = """You are the world's best professional resume writer.
 You create ATS-optimized, recruiter-approved resumes that get candidates to the top of the list.
@@ -67,7 +68,8 @@ Line 1 = Full name (Title Case). Line 2 = Role/title. Line 3 = Contact info.
 ALL CAPS section headers. Hyphens for bullets. Standard ASCII only."""
         }
     ]
-    return chat(messages, temperature=0.2)
+    # Use the standard chat model for creative generation
+    return chat(messages, temperature=0.2, model="deepseek-chat")
 
 
 def run_tailor_loop(
